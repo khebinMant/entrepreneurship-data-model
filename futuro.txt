@@ -1,0 +1,24 @@
+4. Preparación para el FUTURO 🔮 (muy importante)
+🎟️ Entradas pagadas (sin romper nada)
+
+A futuro solo agregas:
+
+CREATE TABLE event_ticket (
+    ticket_id BIGINT GENERATED ALWAYS AS IDENTITY,
+    event_id BIGINT NOT NULL,
+    user_id BIGINT,
+    price NUMERIC(10,2) NOT NULL,
+    purchased_at TIMESTAMP DEFAULT now()
+);
+
+
+👉 No tocas event.
+
+💳 Pagos
+CREATE TABLE payment (
+    payment_id BIGINT GENERATED ALWAYS AS IDENTITY,
+    ticket_id BIGINT,
+    amount NUMERIC(10,2),
+    payment_status_id BIGINT,
+    created_at TIMESTAMP
+);
