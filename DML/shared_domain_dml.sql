@@ -13,6 +13,10 @@ INSERT INTO catalogue_type (code, name, description) VALUES
 ('SOCIAL_PLATFORM', 'Social Platform', 'Social media platforms'),
 ('THEME_TYPE', 'Portal Theme', 'Themes for entrepreneurship portals');
 
+-- PARTICIPATION STATUS
+INSERT INTO catalogue_type (code, name, description)
+VALUES ('EVENT_PARTICIPATION_STATUS', 'Participation Status', 'Participation status in event');
+
 INSERT INTO catalogue_value (catalogue_type_id, code, name)
 SELECT catalogue_type_id, 'EC', 'Ecuador'
 FROM catalogue_type WHERE code = 'COUNTRY';
@@ -112,17 +116,15 @@ SELECT catalogue_type_id, 'DARK', 'Dark Theme'
 FROM catalogue_type WHERE code = 'THEME_TYPE';
 
 
-INSERT INTO catalogue_value (catalogue_type_id, code, description)
-VALUES
-(1, 'PHYSICAL', 'Physical event'),
-(1, 'VIRTUAL', 'Virtual event');
 
--- PARTICIPATION STATUS
-INSERT INTO catalogue_type (code, description)
-VALUES ('EVENT_PARTICIPATION_STATUS', 'Participation status in event');
+INSERT INTO catalogue_value (catalogue_type_id, code, name)
+SELECT catalogue_type_id, 'INVITED', 'Invited'
+FROM catalogue_type WHERE code = 'EVENT_PARTICIPATION_STATUS';
 
-INSERT INTO catalogue_value (catalogue_type_id, code, description)
-VALUES
-(2, 'INVITED', 'Invited'),
-(2, 'ACCEPTED', 'Accepted'),
-(2, 'REJECTED', 'Rejected');
+INSERT INTO catalogue_value (catalogue_type_id, code, name)
+SELECT catalogue_type_id, 'ACCEPTED', 'Accepted'
+FROM catalogue_type WHERE code = 'EVENT_PARTICIPATION_STATUS';
+
+INSERT INTO catalogue_value (catalogue_type_id, code, name)
+SELECT catalogue_type_id, 'REJECTED', 'Rejected'
+FROM catalogue_type WHERE code = 'EVENT_PARTICIPATION_STATUS';

@@ -50,8 +50,6 @@ ALTER TABLE event ADD CONSTRAINT fk_event_city FOREIGN KEY (city_id) REFERENCES 
 ALTER TABLE event ADD CONSTRAINT fk_event_creator FOREIGN KEY (created_by_user_id) REFERENCES app_user(user_id);
 --event_space → event
 ALTER TABLE event_space ADD CONSTRAINT fk_event_space_event FOREIGN KEY (event_id) REFERENCES event (event_id);
---event -> catalogue_value
-ALTER TABLE event ADD CONSTRAINT fk_event_type FOREIGN KEY (event_type_id) REFERENCES catalogue_value(catalogue_value_id);
 --event_invitation → event
 ALTER TABLE event_invitation ADD CONSTRAINT fk_event_invitation_event FOREIGN KEY (event_id) REFERENCES event (event_id);
 --event_invitation → event_space
