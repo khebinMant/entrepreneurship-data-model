@@ -1,0 +1,305 @@
+@startuml Tesis_DB_ER_Diagram
+!theme plain
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+
+' ============================================
+' SHARED DOMAIN (CATALOGUES)
+' ============================================
+package "SHARED DOMAIN" #E8F4F8 {
+    entity "catalogue_type" as ct {
+        * **catalogue_type_id** : BIGINT <<PK>>
+        --
+        * code : VARCHAR(50) <<UK>>
+        * name : VARCHAR(100)
+        description : TEXT
+        * created_at : TIMESTAMP
+    }
+    
+    entity "catalogue_value" as cv {
+        * **catalogue_value_id** : BIGINT <<PK>>
+        --
+        * catalogue_type_id : BIGINT <<FK>>
+        * code : VARCHAR(50)
+        * name : VARCHAR(150)
+        description : TEXT
+        parent_value_id : BIGINT <<FK>>
+        * created_at : TIMESTAMP
+    }
+}
+
+' ============================================
+' USER DOMAIN
+' ============================================
+package "USER DOMAIN" #FFF4E6 {
+    entity "app_user" as user {
+        * **user_id** : BIGINT <<PK>>
+        --
+        * keycloak_id : VARCHAR(100) <<UK>>
+        * first_name : VARCHAR(100)
+        * last_name : VARCHAR(100)
+        profile_picture_url : TEXT
+        * created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+    
+    entity "user_contact" as contact {
+        * **user_contact_id** : BIGINT <<PK>>
+        --
+        * user_id : BIGINT <<FK>>
+        * contact_type_id : BIGINT <<FK>>
+        * contact_value : VARCHAR(150)
+        * is_primary : BOOLEAN
+        * created_at : TIMESTAMP
+    }
+    
+    entity "user_address" as address {
+        * **user_address_id** : BIGINT <<PK>>
+        --
+        * user_id : BIGINT <<FK>>
+        * country_id : BIGINT <<FK>>
+        * province_id : BIGINT <<FK>>
+        * city_id : BIGINT <<FK>>
+        parish_id : BIGINT <<FK>>
+        * address_line : TEXT
+        reference : TEXT
+        * is_primary : BOOLEAN
+        * created_at : TIMESTAMP
+    }
+    
+    entity "user_identification" as identification {
+        * **user_identification_id** : BIGINT <<PK>>
+        --
+        * user_id : BIGINT <<FK>>
+        * identification_type_id : BIGINT <<FK>>
+        * identification_number : VARCHAR(30)
+        issued_country_id : BIGINT <<FK>>
+        * created_at : TIMESTAMP
+    }
+}
+
+' ============================================
+' ENTREPRENEURSHIP DOMAIN
+' ============================================
+package "ENTREPRENEURSHIP DOMAIN" #E8F5E9 {
+    entity "category" as category {
+        * **category_id** : BIGINT <<PK>>
+        --
+        * name : VARCHAR(100) <<UK>>
+        description : TEXT
+        * created_at : TIMESTAMP
+    }
+    
+    entity "entrepreneurship" as ent {
+        * **entrepreneurship_id** : BIGINT <<PK>>
+        --
+        * user_id : BIGINT <<FK>>
+        * category_id : BIGINT <<FK>>
+        * name : VARCHAR(150)
+        description : TEXT
+        logo_url : TEXT
+        * is_physical : BOOLEAN
+        * is_digital : BOOLEAN
+        * created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+    
+    entity "entrepreneurship_location" as loc {
+        * **location_id** : BIGINT <<PK>>
+        --
+        * entrepreneurship_id : BIGINT <<FK>>
+        * country_id : BIGINT <<FK>>
+        * province_id : BIGINT <<FK>>
+        * city_id : BIGINT <<FK>>
+        parish_id : BIGINT <<FK>>
+        address_line : TEXT
+        latitude : DECIMAL(9,6)
+        longitude : DECIMAL(9,6)
+        * created_at : TIMESTAMP
+    }
+    
+    entity "entrepreneurship_social_link" as social {
+        * **social_link_id** : BIGINT <<PK>>
+        --
+        * entrepreneurship_id : BIGINT <<FK>>
+        * social_platform_id : BIGINT <<FK>>
+        * url : TEXT
+        * created_at : TIMESTAMP
+    }
+    
+    entity "entrepreneurship_gallery" as gallery {
+        * **gallery_id** : BIGINT <<PK>>
+        --
+        * entrepreneurship_id : BIGINT <<FK>>
+        * image_url : TEXT
+        * created_at : TIMESTAMP
+    }
+    
+    entity "entrepreneurship_portal" as portal {
+        * **portal_id** : BIGINT <<PK>>
+        --
+        * entrepreneurship_id : BIGINT <<FK>>
+        * subdomain : VARCHAR(100) <<UK>>
+        theme_id : BIGINT <<FK>>
+        * is_active : BOOLEAN
+        * created_at : TIMESTAMP
+    }
+}
+
+' ============================================
+' EVENT DOMAIN
+' ============================================
+package "EVENT DOMAIN" #FCE4EC {
+    entity "event" as event {
+        * **event_id** : BIGINT <<PK>>
+        --
+        * created_by_user_id : BIGINT <<FK>>
+        * name : VARCHAR(150)
+        description : TEXT
+        * event_type_id : BIGINT <<FK>>
+        * event_visibility_id : BIGINT <<FK>>
+        * is_paid : BOOLEAN
+        price : NUMERIC(10,2)
+        max_attendees : INTEGER
+        max_entrepreneurships : INTEGER
+        virtual_link : TEXT
+        * start_datetime : TIMESTAMP
+        * end_datetime : TIMESTAMP
+        country_id : BIGINT <<FK>>
+        province_id : BIGINT <<FK>>
+        city_id : BIGINT <<FK>>
+        address_line : TEXT
+        * created_at : TIMESTAMP
+    }
+    
+    entity "event_space" as space {
+        * **event_space_id** : BIGINT <<PK>>
+        --
+        * event_id : BIGINT <<FK>>
+        * space_code : VARCHAR(20)
+        * is_available : BOOLEAN
+        * created_at : TIMESTAMP
+    }
+    
+    entity "event_invitation" as invitation {
+        * **invitation_id** : BIGINT <<PK>>
+        --
+        * event_id : BIGINT <<FK>>
+        * entrepreneurship_id : BIGINT <<FK>>
+        * event_space_id : BIGINT <<FK>>
+        * invitation_status_id : BIGINT <<FK>>
+        * sent_at : TIMESTAMP
+        responded_at : TIMESTAMP
+    }
+    
+    entity "event_entrepreneurship_participant" as participant {
+        * **event_participant_id** : BIGINT <<PK>>
+        --
+        * event_id : BIGINT <<FK>>
+        * entrepreneurship_id : BIGINT <<FK>>
+        space_code : VARCHAR(10)
+        * participation_status_id : BIGINT <<FK>>
+        * invited_at : TIMESTAMP
+        responded_at : TIMESTAMP
+    }
+}
+
+' ============================================
+' CATALOGUE RELATIONSHIPS
+' ============================================
+ct ||--o{ cv : "catalogue_type_id"
+cv ||--o{ cv : "parent_value_id\n(self-reference)"
+
+' ============================================
+' USER DOMAIN RELATIONSHIPS
+' ============================================
+user ||--o{ contact : "user_id"
+user ||--o{ address : "user_id"
+user ||--o{ identification : "user_id"
+user ||--o{ ent : "user_id\n(owner)"
+user ||--o{ event : "created_by_user_id\n(creator)"
+
+cv ||--o{ contact : "contact_type_id"
+cv ||--o{ address : "country_id"
+cv ||--o{ address : "province_id"
+cv ||--o{ address : "city_id"
+cv ||--o{ address : "parish_id"
+cv ||--o{ identification : "identification_type_id"
+cv ||--o{ identification : "issued_country_id"
+
+' ============================================
+' ENTREPRENEURSHIP DOMAIN RELATIONSHIPS
+' ============================================
+category ||--o{ ent : "category_id"
+ent ||--o{ loc : "entrepreneurship_id"
+ent ||--o{ social : "entrepreneurship_id"
+ent ||--o{ gallery : "entrepreneurship_id"
+ent ||--o{ portal : "entrepreneurship_id"
+ent ||--o{ invitation : "entrepreneurship_id"
+ent ||--o{ participant : "entrepreneurship_id"
+
+cv ||--o{ loc : "country_id"
+cv ||--o{ loc : "province_id"
+cv ||--o{ loc : "city_id"
+cv ||--o{ loc : "parish_id"
+cv ||--o{ social : "social_platform_id"
+cv ||--o{ portal : "theme_id"
+
+' ============================================
+' EVENT DOMAIN RELATIONSHIPS
+' ============================================
+event ||--o{ space : "event_id"
+event ||--o{ invitation : "event_id"
+event ||--o{ participant : "event_id"
+space ||--o{ invitation : "event_space_id"
+
+cv ||--o{ event : "event_type_id"
+cv ||--o{ event : "event_visibility_id"
+cv ||--o{ event : "country_id"
+cv ||--o{ event : "province_id"
+cv ||--o{ event : "city_id"
+cv ||--o{ invitation : "invitation_status_id"
+cv ||--o{ participant : "participation_status_id"
+
+' ============================================
+' NOTES
+' ============================================
+note right of ct
+  **CATALOGUE TYPES**
+  • COUNTRY
+  • PROVINCE
+  • CITY
+  • PARISH
+  • CONTACT_TYPE
+  • IDENTIFICATION_TYPE
+  • EVENT_TYPE
+  • EVENT_VISIBILITY
+  • INVITATION_STATUS
+  • EVENT_PARTICIPATION_STATUS
+  • SOCIAL_PLATFORM
+  • THEME_TYPE
+end note
+
+note right of event
+  **EVENT FEATURES**
+  • Physical or Virtual
+  • Public or Private
+  • Free or Paid
+  • Max attendees (público)
+  • Max entrepreneurships
+  • Geographic location
+  • Virtual link
+end note
+
+note right of ent
+  **ENTREPRENEURSHIP**
+  • Can be physical, digital, or both
+  • Has unique subdomain for portal
+  • Categorized by category
+  • Multiple social links
+  • Image gallery
+  • GPS location
+end note
+
+@enduml

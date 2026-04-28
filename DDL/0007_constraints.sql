@@ -42,6 +42,8 @@ ALTER TABLE entrepreneurship_portal ADD CONSTRAINT fk_entrepreneurship_portal_th
 --📅 EVENT DOMAIN
 --event → catalogue_value (EVENT_TYPE)
 ALTER TABLE event ADD CONSTRAINT fk_event_type FOREIGN KEY (event_type_id) REFERENCES catalogue_value (catalogue_value_id);
+--event → catalogue_value (EVENT_VISIBILITY)
+ALTER TABLE event ADD CONSTRAINT fk_event_visibility FOREIGN KEY (event_visibility_id) REFERENCES catalogue_value (catalogue_value_id);
 --event → catalogue_value (Location)
 ALTER TABLE event ADD CONSTRAINT fk_event_country FOREIGN KEY (country_id) REFERENCES catalogue_value (catalogue_value_id);
 ALTER TABLE event ADD CONSTRAINT fk_event_province FOREIGN KEY (province_id) REFERENCES catalogue_value (catalogue_value_id);

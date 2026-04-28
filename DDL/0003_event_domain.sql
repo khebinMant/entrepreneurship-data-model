@@ -7,10 +7,11 @@ CREATE TABLE event (
     name VARCHAR(150) NOT NULL,
     description TEXT,
     event_type_id BIGINT NOT NULL, -- PHYSICAL / VIRTUAL
+    event_visibility_id BIGINT NOT NULL, -- PUBLIC / PRIVATE
     is_paid BOOLEAN NOT NULL DEFAULT FALSE,
     price NUMERIC(10,2),
-    capacity INTEGER,
-    max_entrepreneurships INTEGER,
+    max_attendees INTEGER, -- Capacidad máxima de asistencia del público
+    max_entrepreneurships INTEGER, -- Capacidad máxima de emprendimientos
     virtual_link TEXT,
     start_datetime TIMESTAMP NOT NULL,
     end_datetime TIMESTAMP NOT NULL,

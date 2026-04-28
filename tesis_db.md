@@ -235,10 +235,11 @@ Tabla principal de eventos.
 | `name` | VARCHAR(150) | Nombre del evento |
 | `description` | TEXT | Descripción del evento |
 | `event_type_id` | BIGINT | FK → `catalogue_value` (PHYSICAL/VIRTUAL) |
+| `event_visibility_id` | BIGINT | FK → `catalogue_value` (PUBLIC/PRIVATE) |
 | `is_paid` | BOOLEAN | ¿Evento de pago? |
 | `price` | NUMERIC(10,2) | Precio de entrada |
-| `capacity` | INTEGER | Capacidad total de asistentes |
-| `max_entrepreneurships` | INTEGER | Máximo de emprendimientos |
+| `max_attendees` | INTEGER | Capacidad máxima de asistencia del público |
+| `max_entrepreneurships` | INTEGER | Capacidad máxima de emprendimientos |
 | `virtual_link` | TEXT | Link para eventos virtuales |
 | `start_datetime` | TIMESTAMP | Fecha/hora de inicio |
 | `end_datetime` | TIMESTAMP | Fecha/hora de fin |
@@ -251,6 +252,9 @@ Tabla principal de eventos.
 **Reglas de Negocio:**
 - Check constraint: Si `is_paid = false`, entonces `price` debe ser `NULL`
 - Check constraint: Si `is_paid = true`, entonces `price` debe ser `>= 0`
+- Campo `event_visibility_id`: Permite eventos públicos (visibles a todos) o privados (solo invitados)
+- Campo `max_attendees`: Controla capacidad del público general
+- Campo `max_entrepreneurships`: Controla cantidad de emprendimientos participantes
 
 ---
 
@@ -327,7 +331,7 @@ Define tipos de catálogos.
 | `description` | TEXT | Descripción del catálogo |
 | `created_at` | TIMESTAMP | Fecha de creación |
 
-**Tipos Implementados:**
+### Tipos Implementados:
 - `COUNTRY` - Países
 - `PROVINCE` - Provincias
 - `CITY` - Ciudades
@@ -335,8 +339,9 @@ Define tipos de catálogos.
 - `CONTACT_TYPE` - Tipos de contacto (Phone, Email)
 - `IDENTIFICATION_TYPE` - Tipos de identificación (Cédula, RUC, Passport)
 - `EVENT_TYPE` - Tipos de evento (Physical, Virtual)
+- `EVENT_VISIBILITY` - Visibilidad de evento (Public, Private)
 - `INVITATION_STATUS` - Estados de invitación (Pending, Accepted, Rejected)
-- `SOCIAL_PLATFORM` - Plataformas sociales (Facebook, Instagram, WhatsApp)
+- `SOCIAL_PLATFORM` - Plataformas sociales (Facebook, Instagram, WhatsApp, TikTok, Twitter)
 - `THEME_TYPE` - Temas de portal (Light, Dark)
 - `EVENT_PARTICIPATION_STATUS` - Estados de participación (Invited, Accepted, Rejected)
 
@@ -364,12 +369,53 @@ Valores específicos de cada catálogo.
 
 ## 🌐 5. Datos Semilla (DML)
 
-### Ubicaciones Geográficas (Ejemplo Ecuador)
+### Ubicaciones Geográficas - Ecuador Completo
+
+#### País
+- **Ecuador** (código: EC)
+
+#### 24 Provincias y sus Capitales
+
+1. **Azuay** → Cuenca
+2. **Bolívar** → Guaranda
+3. **Cañar** → Azogues
+4. **Carchi** → Tulcán
+5. **Chimborazo** → Riobamba
+6. **Cotopaxi** → Latacunga
+7. **El Oro** → Machala
+8. **Esmeraldas** → Esmeraldas
+9. **Galápagos** → Puerto Baquerizo Moreno
+10. **Guayas** → Guayaquil
+11. **Imbabura** → Ibarra
+12. **Loja** → Loja
+13. **Los Ríos** → Babahoyo
+14. **Manabí** → Portoviejo
+15. **Morona Santiago** → Macas
+16. **Napo** → Tena
+17. **Orellana** → Francisco de Orellana (Coca)
+18. **Pastaza** → Puyo
+19. **Pichincha** → Quito
+20. **Santa Elena** → Santa Elena
+21. **Santo Domingo de los Tsáchilas** → Santo Domingo
+22. **Sucumbíos** → Nueva Loja (Lago Agrio)
+23. **Tungurahua** → Ambato
+24. **Zamora Chinchipe** → Zamora
+
+#### Parroquias Urbanas Centrales
+Cada ciudad capital tiene una parroquia urbana central registrada.
+
+**Ejemplo de jerarquía:**
 ```
 Ecuador (COUNTRY)
-  └─ Pichincha (PROVINCE)
-      └─ Quito (CITY)
-          └─ La Mariscal (PARISH)
+  ├─ Pichincha (PROVINCE)
+  │   └─ Quito (CITY)
+  │       └─ La Mariscal (PARISH)
+  ├─ Guayas (PROVINCE)
+  │   └─ Guayaquil (CITY)
+  │       └─ Centro (PARISH)
+  └─ Azuay (PROVINCE)
+      └─ Cuenca (CITY)
+          └─ Centro Histórico (PARISH)
 ```
 
 ### Tipos de Contacto
@@ -385,6 +431,10 @@ Ecuador (COUNTRY)
 - `PHYSICAL` - Evento presencial
 - `VIRTUAL` - Evento virtual
 
+### Visibilidad de Evento
+- `PUBLIC` - Evento público (visible para todos)
+- `PRIVATE` - Evento privado (solo para invitados)
+
 ### Estados de Invitación
 - `PENDING` - Pendiente
 - `ACCEPTED` - Aceptada
@@ -394,6 +444,8 @@ Ecuador (COUNTRY)
 - `FACEBOOK` - Facebook
 - `INSTAGRAM` - Instagram
 - `WHATSAPP` - WhatsApp
+- `TIKTOK` - TikTok
+- `TWITTER` - Twitter (X)
 
 ### Temas de Portal
 - `LIGHT` - Tema claro
@@ -428,7 +480,7 @@ Ecuador (COUNTRY)
 
 ### 6.4 Eventos
 - `event` → `app_user` (creador)
-- `event` → `catalogue_value` × 4 (tipo y ubicación)
+- `event` → `catalogue_value` × 5 (tipo, visibilidad y ubicación)
 - `event_space` → `event`
 - `event_invitation` → `event`
 - `event_invitation` → `entrepreneurship`
@@ -608,25 +660,38 @@ CREATE TABLE payment (
 ### Estructura de Carpetas
 ```
 db/
-├── complete.sql                      # Script completo consolidado
-├── futuro.txt                         # Funcionalidades futuras
-├── tesis_db.md                        # Este documento
+├── complete.sql                          # Script completo consolidado
+├── futuro.txt                            # Funcionalidades futuras
+├── tesis_db.md                           # Este documento
+├── tesis_db_er.puml                      # Diagrama PlantUML del modelo ER
 ├── DDL/
-│   ├── 0001_user_domain.sql          # Tablas de usuarios
+│   ├── 0001_user_domain.sql              # Tablas de usuarios
 │   ├── 0002_entrepreneurship_domain.sql  # Tablas de emprendimientos
-│   ├── 0003_event_domain.sql         # Tablas de eventos
-│   ├── 0004_shared_domain.sql        # Tablas de catálogos
-│   ├── 0005_metrics_domain.sql       # (Vacío - futuro)
-│   ├── 0006_notification_domain.sql  # (Vacío - futuro)
-│   └── 0007_constraints.sql          # Foreign keys y constraints
+│   ├── 0003_event_domain.sql             # Tablas de eventos
+│   ├── 0004_shared_domain.sql            # Tablas de catálogos
+│   ├── 0005_metrics_domain.sql           # (Vacío - futuro)
+│   ├── 0006_notification_domain.sql      # (Vacío - futuro)
+│   └── 0007_constraints.sql              # Foreign keys y constraints
 └── DML/
-    └── shared_domain_dml.sql         # Datos semilla (catálogos)
+    ├── shared_domain_dml.sql             # Datos semilla básicos (deprecado)
+    └── initial_data.sql                  # Datos iniciales completos (USAR ESTE)
 ```
 
 ### Orden de Ejecución
+
+#### Opción 1: Ejecución Modular (Recomendado para desarrollo)
 1. DDL en orden numérico (0001 → 0007)
-2. DML después de DDL completo
-3. O ejecutar `complete.sql` directamente
+2. DML: Ejecutar `initial_data.sql` para datos completos
+
+#### Opción 2: Ejecución Única (Recomendado para producción)
+1. Ejecutar `complete.sql` (contiene toda la estructura)
+2. Ejecutar `initial_data.sql` (contiene todos los catálogos)
+
+**Nota:** `shared_domain_dml.sql` está deprecado. Usar `initial_data.sql` que incluye:
+- Todas las 24 provincias de Ecuador
+- Las 24 ciudades capitales
+- Parroquias urbanas centrales
+- Todos los catálogos del sistema
 
 ---
 
@@ -635,8 +700,10 @@ db/
 Esta base de datos representa un sistema completo para:
 - ✅ Gestionar usuarios con autenticación externa (Keycloak)
 - ✅ Administrar emprendimientos con múltiples características
-- ✅ Organizar eventos y gestionar participación
+- ✅ Organizar eventos públicos y privados con control de capacidad
+- ✅ Gestionar participación de emprendimientos en eventos
 - ✅ Sistema flexible de catálogos para configuración
+- ✅ Datos geográficos completos de Ecuador (24 provincias)
 - ✅ Escalabilidad para funcionalidades futuras (pagos, métricas, notificaciones)
 
 **Ventajas del diseño:**
@@ -645,6 +712,14 @@ Esta base de datos representa un sistema completo para:
 - Integridad de datos garantizada
 - Flexible mediante sistema de catálogos
 - Preparado para crecimiento futuro
+- Datos geográficos completos y jerárquicos
+
+**Nuevas funcionalidades implementadas:**
+- ✅ Eventos públicos vs privados
+- ✅ Control de capacidad de público (`max_attendees`)
+- ✅ Control de capacidad de emprendimientos (`max_entrepreneurships`)
+- ✅ Base de datos geográfica completa de Ecuador
+- ✅ Diagrama ER en PlantUML
 
 ---
 
