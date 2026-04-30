@@ -69,4 +69,4 @@ ALTER TABLE entrepreneurship_portal ADD CONSTRAINT pk_entrepreneurship_portal PR
 ALTER TABLE entrepreneurship_portal ADD CONSTRAINT uk_entrepreneurship_subdomain UNIQUE (subdomain);
 
 
-ALTER TABLE event ADD CONSTRAINT ck_event_price_paidCHECK ((is_paid = false AND price IS NULL)OR (is_paid = true AND price IS NOT NULL AND price >= 0));
+ALTER TABLE event ADD CONSTRAINT ck_event_price_paid CHECK ((is_paid = false AND price IS NULL) OR (is_paid = true AND price IS NOT NULL AND price >= 0));
