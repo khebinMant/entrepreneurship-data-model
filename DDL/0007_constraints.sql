@@ -62,3 +62,9 @@ ALTER TABLE event_entrepreneurship_participant ADD CONSTRAINT fk_participant_eve
 ALTER TABLE event_entrepreneurship_participant ADD CONSTRAINT fk_participant_entrepreneurship FOREIGN KEY (entrepreneurship_id) REFERENCES entrepreneurship(entrepreneurship_id);
 --event_entrepreneurship_participant -> catalogue_value
 ALTER TABLE event_entrepreneurship_participant ADD CONSTRAINT fk_participant_status FOREIGN KEY (participation_status_id) REFERENCES catalogue_value(catalogue_value_id);
+
+--🖼️ IMAGE GALLERY
+--image_gallery → app_user (uploaded_by_user_id)
+ALTER TABLE image_gallery ADD CONSTRAINT fk_image_gallery_uploader FOREIGN KEY (uploaded_by_user_id) REFERENCES app_user (user_id);
+-- Nota: entity_id es una relación polimórfica (puede referenciar entrepreneurship_id o event_id dependiendo de entity_type)
+-- No se puede crear FK directa, debe validarse en la capa de aplicación

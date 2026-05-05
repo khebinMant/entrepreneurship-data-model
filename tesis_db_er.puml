@@ -128,14 +128,6 @@ package "ENTREPRENEURSHIP DOMAIN" #E8F5E9 {
         * created_at : TIMESTAMP
     }
     
-    entity "entrepreneurship_gallery" as gallery {
-        * **gallery_id** : BIGINT <<PK>>
-        --
-        * entrepreneurship_id : BIGINT <<FK>>
-        * image_url : TEXT
-        * created_at : TIMESTAMP
-    }
-    
     entity "entrepreneurship_portal" as portal {
         * **portal_id** : BIGINT <<PK>>
         --
@@ -170,6 +162,7 @@ package "EVENT DOMAIN" #FCE4EC {
         province_id : BIGINT <<FK>>
         city_id : BIGINT <<FK>>
         address_line : TEXT
+        cover_image_url : TEXT
         * created_at : TIMESTAMP
     }
     
@@ -206,6 +199,30 @@ package "EVENT DOMAIN" #FCE4EC {
 }
 
 ' ============================================
+' IMAGE GALLERY DOMAIN
+' ============================================
+package "IMAGE GALLERY" #F3E5F5 {
+    entity "image_gallery" as img_gallery {
+        * **image_id** : BIGINT <<PK>>
+        --
+        * entity_type : VARCHAR(50)
+        * entity_id : BIGINT
+        * image_url : TEXT
+        * file_name : VARCHAR(255)
+        * display_order : INTEGER
+        alt_text : VARCHAR(255)
+        description : TEXT
+        file_size_kb : INTEGER
+        width_px : INTEGER
+        height_px : INTEGER
+        mime_type : VARCHAR(50)
+        * uploaded_by_user_id : BIGINT <<FK>>
+        * created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+}
+
+' ============================================
 ' CATALOGUE RELATIONSHIPS
 ' ============================================
 ct ||--o{ cv : "catalogue_type_id"
@@ -234,7 +251,6 @@ cv ||--o{ identification : "issued_country_id"
 category ||--o{ ent : "category_id"
 ent ||--o{ loc : "entrepreneurship_id"
 ent ||--o{ social : "entrepreneurship_id"
-ent ||--o{ gallery : "entrepreneurship_id"
 ent ||--o{ portal : "entrepreneurship_id"
 ent ||--o{ invitation : "entrepreneurship_id"
 ent ||--o{ participant : "entrepreneurship_id"
@@ -261,6 +277,14 @@ cv ||--o{ event : "province_id"
 cv ||--o{ event : "city_id"
 cv ||--o{ invitation : "invitation_status_id"
 cv ||--o{ participant : "participation_status_id"
+
+' ============================================
+' IMAGE GALLERY RELATIONSHIPS
+' ============================================
+user ||--o{ img_gallery : "uploaded_by_user_id"
+user ..o{ img_gallery : "entity_id\n(when entity_type='USER')"
+ent ..o{ img_gallery : "entity_id\n(when entity_type='ENTREPRENEURSHIP')"
+event ..o{ img_gallery : "entity_id\n(when entity_type='EVENT')"
 
 ' ============================================
 ' NOTES
@@ -298,8 +322,21 @@ note right of ent
   • Has unique subdomain for portal
   • Categorized by category
   • Multiple social links
-  • Image gallery
+  • Logo (logo_url field)
+  • Image gallery (image_gallery table)
   • GPS location
+end note
+
+note right of img_gallery
+  **IMAGE GALLERY**
+  • Generic table for galleries
+  • entity_type: 'USER', 'ENTREPRENEURSHIP', 'EVENT'
+  • Stores multiple images per entity
+  • Ordered by display_order
+  • Main images stored in parent tables:
+    - app_user.profile_picture_url
+    - entrepreneurship.logo_url
+    - event.cover_image_url
 end note
 
 @enduml

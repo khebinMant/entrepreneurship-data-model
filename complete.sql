@@ -70,6 +70,7 @@ CREATE TABLE event (
     province_id BIGINT,
     city_id BIGINT,
     address_line TEXT,
+    cover_image_url TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 ALTER TABLE event ADD CONSTRAINT pk_event PRIMARY KEY (event_id);
@@ -156,14 +157,29 @@ CREATE TABLE entrepreneurship_social_link (
 );
 ALTER TABLE entrepreneurship_social_link ADD CONSTRAINT pk_entrepreneurship_social_link PRIMARY KEY (social_link_id);
 
-CREATE TABLE entrepreneurship_gallery (
-    gallery_id BIGINT GENERATED ALWAYS AS IDENTITY,
-    entrepreneurship_id BIGINT NOT NULL,
+-- Tabla genérica para galerías de imágenes de usuarios, emprendimientos y eventos
+CREATE TABLE image_gallery (
+    image_id BIGINT GENERATED ALWAYS AS IDENTITY,
+    entity_type VARCHAR(50) NOT NULL, -- 'USER', 'ENTREPRENEURSHIP', 'EVENT'
+    entity_id BIGINT NOT NULL, -- ID de la entidad relacionada
     image_url TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now()
+    file_name VARCHAR(255) NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    alt_text VARCHAR(255),
+    description TEXT,
+    file_size_kb INTEGER,
+    width_px INTEGER,
+    height_px INTEGER,
+    mime_type VARCHAR(50),
+    uploaded_by_user_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP
 );
 
-ALTER TABLE entrepreneurship_gallery ADD CONSTRAINT pk_entrepreneurship_gallery PRIMARY KEY (gallery_id);
+ALTER TABLE image_gallery ADD CONSTRAINT pk_image_gallery PRIMARY KEY (image_id);
+ALTER TABLE image_gallery ADD CONSTRAINT chk_image_gallery_entity_type CHECK (entity_type IN ('USER', 'ENTREPRENEURSHIP', 'EVENT'));
+CREATE INDEX idx_image_gallery_entity ON image_gallery (entity_type, entity_id);
+CREATE INDEX idx_image_gallery_order ON image_gallery (entity_type, entity_id, display_order);
 
 CREATE TABLE entrepreneurship_portal (
     portal_id BIGINT GENERATED ALWAYS AS IDENTITY,
@@ -271,3 +287,7 @@ ALTER TABLE event_entrepreneurship_participant ADD CONSTRAINT fk_participant_eve
 ALTER TABLE event_entrepreneurship_participant ADD CONSTRAINT fk_participant_entrepreneurship FOREIGN KEY (entrepreneurship_id) REFERENCES entrepreneurship(entrepreneurship_id);
 --event_entrepreneurship_participant -> catalogue_value
 ALTER TABLE event_entrepreneurship_participant ADD CONSTRAINT fk_participant_status FOREIGN KEY (participation_status_id) REFERENCES catalogue_value(catalogue_value_id);
+
+--🖼️ IMAGE GALLERY
+--image_gallery → app_user (uploaded_by_user_id)
+ALTER TABLE image_gallery ADD CONSTRAINT fk_image_gallery_uploader FOREIGN KEY (uploaded_by_user_id) REFERENCES app_user (user_id);

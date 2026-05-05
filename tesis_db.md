@@ -21,9 +21,10 @@ La base de datos utiliza **PostgreSQL** y está organizada en **dominios funcion
 1. **User Domain** (Usuarios) - Gestión de usuarios y sus datos
 2. **Entrepreneurship Domain** (Emprendimientos) - Negocios y su información
 3. **Event Domain** (Eventos) - Eventos, espacios e invitaciones
-4. **Shared Domain** (Catálogos) - Valores compartidos y configurables
-5. **Metrics Domain** (Métricas) - *Preparado para futuro*
-6. **Notification Domain** (Notificaciones) - *Preparado para futuro*
+4. **Image Gallery** (Imágenes) - Gestión centralizada de galerías de imágenes
+5. **Shared Domain** (Catálogos) - Valores compartidos y configurables
+6. **Metrics Domain** (Métricas) - *Preparado para futuro*
+7. **Notification Domain** (Notificaciones) - *Preparado para futuro*
 
 ---
 
@@ -188,19 +189,7 @@ Redes sociales del emprendimiento.
 
 ---
 
-#### 2.5 `entrepreneurship_gallery`
-Galería de imágenes del emprendimiento.
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `gallery_id` | BIGINT | PK autoincremental |
-| `entrepreneurship_id` | BIGINT | FK → `entrepreneurship` |
-| `image_url` | TEXT | URL de la imagen |
-| `created_at` | TIMESTAMP | Fecha de creación |
-
----
-
-#### 2.6 `entrepreneurship_portal`
+#### 2.5 `entrepreneurship_portal`
 Portal o sitio web personalizado del emprendimiento.
 
 | Campo | Tipo | Descripción |
@@ -247,6 +236,7 @@ Tabla principal de eventos.
 | `province_id` | BIGINT | FK → `catalogue_value` |
 | `city_id` | BIGINT | FK → `catalogue_value` |
 | `address_line` | TEXT | Dirección del evento |
+| `cover_image_url` | TEXT | URL de imagen de portada del evento |
 | `created_at` | TIMESTAMP | Fecha de creación |
 
 **Reglas de Negocio:**
@@ -313,14 +303,194 @@ Participantes confirmados del evento.
 
 ---
 
-## 🔧 4. SHARED DOMAIN (Dominio Compartido - Catálogos)
+## �️ 4. IMAGE GALLERY (Gestión de Imágenes)
+
+### Objetivo
+Gestionar de forma centralizada las imágenes de galerías para usuarios, emprendimientos y eventos, almacenando las URLs de Digital Ocean Spaces con metadatos relevantes.
+
+### Integración con Digital Ocean Spaces
+La plataforma utiliza Digital Ocean Spaces para almacenar imágenes con la siguiente estructura:
+
+```
+bucket/
+   users/
+      {userId}/
+         profile.jpg                    → campo profile_picture_url en app_user
+         gallery/
+            img1.jpg                     → tabla image_gallery (entity_type='USER')
+            img2.jpg
+   
+   entrepreneurships/
+      {entrepreneurshipId}/
+         logo.jpg                        → campo logo_url en entrepreneurship
+         gallery/
+            img1.jpg                     → tabla image_gallery (entity_type='ENTREPRENEURSHIP')
+            img2.jpg
+   
+   events/
+      {eventId}/
+         cover.jpg                       → campo cover_image_url en event
+         gallery/
+            img1.jpg                     → tabla image_gallery (entity_type='EVENT')
+            img2.jpg
+```
+
+### Tablas
+
+#### 4.1 `image_gallery`
+Tabla genérica para almacenar galerías de imágenes de múltiples entidades.
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `image_id` | BIGINT | PK autoincremental |
+| `entity_type` | VARCHAR(50) | Tipo de entidad ('USER', 'ENTREPRENEURSHIP', 'EVENT') |
+| `entity_id` | BIGINT | ID de la entidad relacionada |
+| `image_url` | TEXT | URL completa de Digital Ocean Spaces |
+| `file_name` | VARCHAR(255) | Nombre del archivo original |
+| `display_order` | INTEGER | Orden de visualización (menor = primero) |
+| `alt_text` | VARCHAR(255) | Texto alternativo para accesibilidad |
+| `description` | TEXT | Descripción opcional de la imagen |
+| `file_size_kb` | INTEGER | Tamaño del archivo en KB |
+| `width_px` | INTEGER | Ancho de la imagen en píxeles |
+| `height_px` | INTEGER | Alto de la imagen en píxeles |
+| `mime_type` | VARCHAR(50) | Tipo MIME (image/jpeg, image/png, etc.) |
+| `uploaded_by_user_id` | BIGINT | FK → `app_user` (Usuario que subió) |
+| `created_at` | TIMESTAMP | Fecha de creación |
+| `updated_at` | TIMESTAMP | Fecha de actualización |
+
+**Constraints:**
+- PK: `pk_image_gallery` en `image_id`
+- CHK: `chk_image_gallery_entity_type` valida que `entity_type IN ('USER', 'ENTREPRENEURSHIP', 'EVENT')`
+- IDX: `idx_image_gallery_entity` en (`entity_type`, `entity_id`) para búsquedas eficientes
+- IDX: `idx_image_gallery_order` en (`entity_type`, `entity_id`, `display_order`) para ordenamiento
+- FK: `fk_image_gallery_uploader` → `app_user(user_id)`
+
+**Diseño:**
+- **Polimórfico**: Una sola tabla maneja galerías de diferentes entidades
+- **Ordenable**: Campo `display_order` permite controlar el orden de presentación
+- **Completo**: Almacena metadatos útiles (dimensiones, tamaño, MIME type)
+- **Accesible**: Incluye `alt_text` para cumplir con estándares de accesibilidad
+- **Auditable**: Registra quién subió cada imagen
+
+**Notas de Implementación:**
+- Las imágenes principales (profile, logo, cover) se almacenan como campos directos en sus respectivas tablas (`app_user.profile_picture_url`, `entrepreneurship.logo_url`, `event.cover_image_url`)
+- Las galerías (múltiples imágenes adicionales) usan la tabla `image_gallery`
+- Para usuarios: permite fotos adicionales además de la foto de perfil principal
+- Para emprendimientos: galería de productos, instalaciones, equipo, etc.
+- Para eventos: galería de momentos del evento, espacios, actividades, etc.
+- La validación de integridad referencial con `entity_id` debe hacerse en la capa de aplicación
+
+---
+
+### Resumen: ¿Dónde se almacena cada imagen?
+
+| Entidad | Imagen Principal | Campo en BD | Galería Adicional | Tabla |
+|---------|-----------------|-------------|-------------------|-------|
+| **Usuario** | Foto de perfil | `app_user.profile_picture_url` | Fotos adicionales (certificados, premios) | `image_gallery` (entity_type='USER') |
+| **Emprendimiento** | Logo | `entrepreneurship.logo_url` | Productos, instalaciones, equipo | `image_gallery` (entity_type='ENTREPRENEURSHIP') |
+| **Evento** | Portada | `event.cover_image_url` | Momentos, espacios, actividades | `image_gallery` (entity_type='EVENT') |
+
+**Límites sugeridos:**
+- Usuario: 1 foto principal + hasta 5 en galería
+- Emprendimiento: 1 logo + hasta 10 en galería
+- Evento: 1 portada + hasta 20 en galería
+
+---
+
+### Ejemplos de Consultas SQL Comunes
+
+#### Obtener todas las imágenes de un emprendimiento:
+```sql
+-- Logo principal
+SELECT logo_url FROM entrepreneurship WHERE entrepreneurship_id = 42;
+
+-- Galería
+SELECT image_url, file_name, display_order, alt_text
+FROM image_gallery
+WHERE entity_type = 'ENTREPRENEURSHIP' AND entity_id = 42
+ORDER BY display_order;
+```
+
+#### Obtener todas las imágenes de un evento:
+```sql
+-- Portada
+SELECT cover_image_url FROM event WHERE event_id = 8;
+
+-- Galería
+SELECT image_url, file_name, display_order, alt_text
+FROM image_gallery
+WHERE entity_type = 'EVENT' AND entity_id = 8
+ORDER BY display_order;
+```
+
+#### Obtener todas las imágenes de un usuario:
+```sql
+-- Foto de perfil
+SELECT profile_picture_url FROM app_user WHERE user_id = 15;
+
+-- Galería
+SELECT image_url, file_name, display_order, alt_text
+FROM image_gallery
+WHERE entity_type = 'USER' AND entity_id = 15
+ORDER BY display_order;
+```
+
+#### Insertar imagen en galería:
+```sql
+INSERT INTO image_gallery (
+    entity_type, entity_id, image_url, file_name, 
+    display_order, alt_text, uploaded_by_user_id
+) VALUES (
+    'ENTREPRENEURSHIP', 
+    42, 
+    'https://bucket.spaces.com/entrepreneurships/42/gallery/img1.jpg',
+    'producto1.jpg',
+    1,
+    'Producto artesanal hecho a mano',
+    15
+);
+```
+
+---
+
+### Validaciones Requeridas en la Capa de Aplicación
+
+Dado que `image_gallery` usa un diseño polimórfico, la aplicación DEBE validar:
+
+1. **Integridad Referencial**: Verificar que `entity_id` existe en la tabla correspondiente:
+   - Si `entity_type = 'USER'` → verificar en `app_user`
+   - Si `entity_type = 'ENTREPRENEURSHIP'` → verificar en `entrepreneurship`
+   - Si `entity_type = 'EVENT'` → verificar en `event`
+
+2. **Límites de Galería**: Antes de insertar, verificar que no se exceda el límite:
+   ```sql
+   SELECT COUNT(*) FROM image_gallery 
+   WHERE entity_type = 'USER' AND entity_id = 15;
+   -- Debe ser < 5 para usuarios
+   ```
+
+3. **Permisos de Subida**:
+   - Usuario solo puede subir a su propia galería
+   - Propietario de emprendimiento puede subir a galería del emprendimiento
+   - Creador de evento puede subir a galería del evento
+
+4. **Formato y Tamaño**: Validar tipo MIME y tamaño máximo antes de subir a Digital Ocean
+
+5. **Eliminación en Cascada**: Al eliminar usuario/emprendimiento/evento, eliminar también:
+   - El registro de BD en `image_gallery`
+   - Los archivos físicos en Digital Ocean Spaces
+```
+
+---
+
+## 🔧 5. SHARED DOMAIN (Dominio Compartido - Catálogos)
 
 ### Objetivo
 Sistema centralizado y flexible para gestionar valores configurables utilizados en toda la aplicación.
 
 ### Tablas
 
-#### 4.1 `catalogue_type`
+#### 5.1 `catalogue_type`
 Define tipos de catálogos.
 
 | Campo | Tipo | Descripción |
@@ -347,7 +517,7 @@ Define tipos de catálogos.
 
 ---
 
-#### 4.2 `catalogue_value`
+#### 5.2 `catalogue_value`
 Valores específicos de cada catálogo.
 
 | Campo | Tipo | Descripción |
@@ -666,12 +836,13 @@ db/
 ├── tesis_db_er.puml                      # Diagrama PlantUML del modelo ER
 ├── DDL/
 │   ├── 0001_user_domain.sql              # Tablas de usuarios
-│   ├── 0002_entrepreneurship_domain.sql  # Tablas de emprendimientos
-│   ├── 0003_event_domain.sql             # Tablas de eventos
+│   ├── 0002_event_domain.sql             # Tablas de eventos
+│   ├── 0003_entrepreneurship_domain.sql  # Tablas de emprendimientos
 │   ├── 0004_shared_domain.sql            # Tablas de catálogos
 │   ├── 0005_metrics_domain.sql           # (Vacío - futuro)
 │   ├── 0006_notification_domain.sql      # (Vacío - futuro)
-│   └── 0007_constraints.sql              # Foreign keys y constraints
+│   ├── 0007_constraints.sql              # Foreign keys y constraints
+│   └── 0008_image_support.sql            # Soporte de imágenes y galerías
 └── DML/
     ├── shared_domain_dml.sql             # Datos semilla básicos (deprecado)
     └── initial_data.sql                  # Datos iniciales completos (USAR ESTE)
@@ -680,7 +851,7 @@ db/
 ### Orden de Ejecución
 
 #### Opción 1: Ejecución Modular (Recomendado para desarrollo)
-1. DDL en orden numérico (0001 → 0007)
+1. DDL en orden numérico (0001 → 0008)
 2. DML: Ejecutar `initial_data.sql` para datos completos
 
 #### Opción 2: Ejecución Única (Recomendado para producción)
