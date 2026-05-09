@@ -563,5 +563,28 @@ SELECT catalogue_type_id, 'DARK', 'Dark Theme'
 FROM catalogue_type WHERE code = 'THEME_TYPE';
 
 -- =========================
+-- CATEGORIES
+-- =========================
+INSERT INTO category (name, description) VALUES
+('Tecnología', 'Software, hardware, aplicaciones móviles, IA y soluciones digitales'),
+('Gastronomía y Alimentos', 'Restaurantes, comida típica, repostería, bebidas y productos alimenticios'),
+('Turismo y Viajes', 'Agencias de viajes, guías turísticos, hospedaje y experiencias locales'),
+('Artesanías y Manualidades', 'Productos artesanales, tejidos, cerámica y trabajos hechos a mano'),
+('Moda y Vestimenta', 'Ropa, calzado, accesorios y diseño de modas'),
+('Belleza y Cuidado Personal', 'Cosméticos, salud capilar, estética, spa y bienestar personal'),
+('Salud y Bienestar', 'Productos naturales, suplementos, medicina alternativa y fitness'),
+('Educación y Formación', 'Cursos, talleres, tutorías, capacitación y plataformas educativas'),
+('Arte y Cultura', 'Pintura, escultura, fotografía, música y expresión artística'),
+('Agricultura y Agroindustria', 'Producción agrícola, cultivos orgánicos, ganadería y agroturismo'),
+('Servicios Profesionales', 'Consultoría, contabilidad, diseño gráfico, marketing y servicios B2B'),
+('Comercio y Retail', 'Tiendas, bazares, importaciones y venta al por mayor y menor'),
+('Deportes y Recreación', 'Equipamiento deportivo, entrenamiento personal y actividades recreativas'),
+('Medio Ambiente y Sostenibilidad', 'Productos ecológicos, reciclaje, energías renovables y economía circular'),
+('Entretenimiento y Eventos', 'Organización de eventos, musicales, shows, juegos y ocio'),
+('Mascotas y Animales', 'Productos y servicios para mascotas, veterinaria y accesorios'),
+('Hogar y Decoración', 'Muebles, decoración, jardinería y productos para el hogar'),
+('Logística y Transporte', 'Delivery, mensajería, transporte de carga y servicios logísticos');
+
+-- =========================
 -- END OF INITIAL DATA
 -- =========================
