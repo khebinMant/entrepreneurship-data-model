@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS image_gallery (
     entity_type VARCHAR(50) NOT NULL,
     entity_id BIGINT NOT NULL,
     image_url TEXT NOT NULL,
+    storage_path TEXT,
     file_name VARCHAR(255) NOT NULL,
     display_order INTEGER NOT NULL DEFAULT 0,
     alt_text VARCHAR(255),
