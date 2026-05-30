@@ -48,7 +48,7 @@ CREATE TABLE event_invitation (
     invitation_id BIGINT GENERATED ALWAYS AS IDENTITY,
     event_id BIGINT NOT NULL,
     entrepreneurship_id BIGINT NOT NULL,
-    event_space_id BIGINT NOT NULL,
+    event_space_id BIGINT,
     invitation_status_id BIGINT NOT NULL, -- catalogue_value
     sent_at TIMESTAMP NOT NULL DEFAULT now(),
     responded_at TIMESTAMP
