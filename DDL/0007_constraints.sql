@@ -35,9 +35,9 @@ ALTER TABLE entrepreneurship_location ADD CONSTRAINT fk_entrepreneurship_locatio
 ALTER TABLE entrepreneurship_location ADD CONSTRAINT fk_entrepreneurship_location_city FOREIGN KEY (city_id) REFERENCES catalogue_value (catalogue_value_id);
 ALTER TABLE entrepreneurship_location ADD CONSTRAINT fk_entrepreneurship_location_parish FOREIGN KEY (parish_id) REFERENCES catalogue_value (catalogue_value_id);
 --entrepreneurship_social_link → catalogue_value
-ALTER TABLE entrepreneurship_social_link ADD CONSTRAINT fk_entrepreneurship_social_platform FOREIGN KEY (social_platform_id) REFERENCES catalogue_value (catalogue_value_id);
+ALTER TABLE entity_social_link ADD CONSTRAINT fk_entity_social_platform FOREIGN KEY (social_platform_id) REFERENCES catalogue_value (catalogue_value_id);
 --entrepreneurship_portal → catalogue_value
-ALTER TABLE entrepreneurship_portal ADD CONSTRAINT fk_entrepreneurship_portal_theme FOREIGN KEY (theme_id) REFERENCES catalogue_value (catalogue_value_id);
+ALTER TABLE entity_portal ADD CONSTRAINT fk_entity_portal_theme FOREIGN KEY (theme_id) REFERENCES catalogue_value (catalogue_value_id);
 
 --📅 EVENT DOMAIN
 --event → catalogue_value (EVENT_TYPE)

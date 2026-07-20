@@ -39,14 +39,14 @@ CREATE TABLE entrepreneurship_location (
 );
 ALTER TABLE entrepreneurship_location ADD CONSTRAINT pk_entrepreneurship_location PRIMARY KEY (location_id);
 
-CREATE TABLE entrepreneurship_social_link (
+CREATE TABLE entity_social_link (
     social_link_id BIGINT GENERATED ALWAYS AS IDENTITY,
-    entrepreneurship_id BIGINT NOT NULL,
+    entity_id BIGINT NOT NULL,
     social_platform_id BIGINT NOT NULL, -- catalogue_value
     url TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
-ALTER TABLE entrepreneurship_social_link ADD CONSTRAINT pk_entrepreneurship_social_link PRIMARY KEY (social_link_id);
+ALTER TABLE entity_social_link ADD CONSTRAINT pk_entity_social_link PRIMARY KEY (social_link_id);
 
 CREATE TABLE entrepreneurship_gallery (
     gallery_id BIGINT GENERATED ALWAYS AS IDENTITY,
@@ -57,16 +57,17 @@ CREATE TABLE entrepreneurship_gallery (
 
 ALTER TABLE entrepreneurship_gallery ADD CONSTRAINT pk_entrepreneurship_gallery PRIMARY KEY (gallery_id);
 
-CREATE TABLE entrepreneurship_portal (
+CREATE TABLE entity_portal (
     portal_id BIGINT GENERATED ALWAYS AS IDENTITY,
-    entrepreneurship_id BIGINT NOT NULL,
-    subdomain VARCHAR(100) NOT NULL,
+    entity_id BIGINT NOT NULL,
+    subdomain VARCHAR(50000) NOT NULL,
     theme_id BIGINT,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP NOT NULL DEFAULT now()
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    html_content TEXT
 );
-ALTER TABLE entrepreneurship_portal ADD CONSTRAINT pk_entrepreneurship_portal PRIMARY KEY (portal_id);
-ALTER TABLE entrepreneurship_portal ADD CONSTRAINT uk_entrepreneurship_subdomain UNIQUE (subdomain);
+ALTER TABLE entity_portal ADD CONSTRAINT pk_entity_portal PRIMARY KEY (portal_id);
+ALTER TABLE entity_portal ADD CONSTRAINT uk_entity_subdomain UNIQUE (subdomain);
 
 
 ALTER TABLE event ADD CONSTRAINT ck_event_price_paid CHECK ((is_paid = false AND price IS NULL) OR (is_paid = true AND price IS NOT NULL AND price >= 0));
