@@ -19,6 +19,7 @@ CREATE TABLE event (
     province_id BIGINT,
     city_id BIGINT,
     address_line TEXT,
+    maps_url TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 ALTER TABLE event ADD CONSTRAINT pk_event PRIMARY KEY (event_id);

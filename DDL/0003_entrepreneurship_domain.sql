@@ -35,6 +35,7 @@ CREATE TABLE entrepreneurship_location (
     address_line TEXT,
     latitude DECIMAL(9,6),
     longitude DECIMAL(9,6),
+    maps_url TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 ALTER TABLE entrepreneurship_location ADD CONSTRAINT pk_entrepreneurship_location PRIMARY KEY (location_id);
